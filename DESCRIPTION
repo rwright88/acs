@@ -1,0 +1,19 @@
+Package: acs
+Title: Tools for Working with IPUMS ACS Data
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Ray",
+           family = "Wright",
+           role = c("aut", "cre"),
+           email = "raywright88@gmail.com")
+Description: Tools for working with IPUMS ACS data.
+License: MIT + file LICENSE
+Imports: 
+    DBI,
+    dplyr,
+    magrittr,
+    RSQLite
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1

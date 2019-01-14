@@ -1,0 +1,19 @@
+to add:
+----------------------------------------
+family interrelationship (multiple)
+bpl
+trantime
+
+
+to recode:
+----------------------------------------
+degfield
+incearn
+inctot
+met2013
+occ2010
+
+
+problems:
+----------------------------------------
+sqlite data types
