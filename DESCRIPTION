@@ -8,6 +8,8 @@ Authors@R:
            email = "raywright88@gmail.com")
 Description: Tools for working with IPUMS ACS data.
 License: MIT + file LICENSE
+Depends: 
+    R (>= 3.1.2)
 Imports: 
     DBI,
     dplyr,

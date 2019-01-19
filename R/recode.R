@@ -21,6 +21,15 @@ rec_education <- function(x) {
   out
 }
 
+# met2013 ipums variable
+rec_metro <- function(x) {
+  code <- cw_metro[["msa_code"]]
+  name <- cw_metro[["msa_name"]]
+  out <- rep(NA_character_, length(x))
+  out <- name[match(x, code)]
+  out
+}
+
 # race and hispan ipums variables
 rec_race <- function(race, hisp) {
   oth <- c(3, 7:9)

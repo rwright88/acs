@@ -10,7 +10,6 @@ to recode:
 degfield
 incearn
 inctot
-met2013
 occ2010
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.R
 \name{db_write_acs}
 \alias{db_write_acs}
-\title{Write database table from CSV file}
+\title{Write IPUMS ACS database table}
 \usage{
 db_write_acs(file_data, file_db)
 }
@@ -12,5 +12,6 @@ db_write_acs(file_data, file_db)
 \item{file_db}{Path of database to create.}
 }
 \description{
-This will overwrite the existing database table with the same name.
+Write database table from IPUMS ACS CSV file. This will overwrite the
+existing database table with the same name.
 }

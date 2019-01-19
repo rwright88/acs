@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.R
 \name{db_read_acs}
 \alias{db_read_acs}
-\title{Read database table.}
+\title{Read IPUMS ACS database table.}
 \usage{
 db_read_acs(file_db, years, vars)
 }
@@ -17,5 +17,5 @@ db_read_acs(file_db, years, vars)
 Data frame.
 }
 \description{
-Read database table.
+Read IPUMS ACS database table.
 }

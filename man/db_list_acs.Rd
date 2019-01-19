@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.R
 \name{db_list_acs}
 \alias{db_list_acs}
-\title{List variables in acs database table}
+\title{List variables in IPUMS ACS database table}
 \usage{
 db_list_acs(file_db)
 }
@@ -13,5 +13,5 @@ db_list_acs(file_db)
 Character vector of variable names from database table.
 }
 \description{
-List variables in acs database table
+List variables in IPUMS ACS database table
 }

@@ -1,4 +1,4 @@
-#' Read database table.
+#' Read IPUMS ACS database table.
 #'
 #' @param file_db Path of database file to read.
 #' @param years Years in data to query (where).
@@ -28,7 +28,7 @@ db_read_acs <- function(file_db, years, vars) {
   data
 }
 
-#' List variables in acs database table
+#' List variables in IPUMS ACS database table
 #'
 #' @param file_db Path of database file to read.
 #' @return Character vector of variable names from database table.

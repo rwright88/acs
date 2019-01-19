@@ -1,6 +1,7 @@
-#' Write database table from CSV file
+#' Write IPUMS ACS database table
 #'
-#' This will overwrite the existing database table with the same name.
+#' Write database table from IPUMS ACS CSV file. This will overwrite the
+#' existing database table with the same name.
 #'
 #' @param file_data Path of CSV file of IPUMS ACS data.
 #' @param file_db Path of database to create.

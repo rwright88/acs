@@ -12,6 +12,7 @@ clean_acs <- function(data) {
     ~var,       ~fun,
     "age",      rec_age,
     "educd",    rec_education,
+    "met2013",  rec_metro,
     "sex",      rec_sex,
     "classwkr", rec_work_class,
     "empstat",  rec_work_employ,
@@ -19,8 +20,8 @@ clean_acs <- function(data) {
     "wkswork2", rec_work_weeks
   )
 
-  data   <- setNames(data, tolower(names(data)))
-  vars   <- names(data)
+  names(data) <- tolower(names(data))
+  vars <- names(data)
   params <- dplyr::filter(params, var %in% vars)
 
   for (i in seq_along(params[["var"]])) {
