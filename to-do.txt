@@ -16,4 +16,4 @@ occ2010
 
 problems:
 ----------------------------------------
-sqlite data types
+sqlite data types (https://github.com/r-dbi/RSQLite/blob/master/R/table.R)

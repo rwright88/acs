@@ -5,10 +5,13 @@
 #' @param file_data Path of CSV file of IPUMS ACS data.
 #' @param file_db Path of database to create.
 #' @export
-write_db_table <- function(file_data, file_db) {
+db_write_acs <- function(file_data, file_db) {
   # assume every variable from IPUMS data is an integer
   n_cols <- length(read.csv(file_data, nrows = 1))
   types  <- rep("integer", n_cols)
+
+  # TODO
+  # fix by checking https://github.com/r-dbi/RSQLite/blob/master/R/table.R
 
   # names1 <- names(read.csv(file_data, nrows = 1))
   # n_cols <- length(names1)

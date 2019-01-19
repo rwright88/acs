@@ -3,7 +3,7 @@
 #' @param data Data frame of IPUMS ACS data.
 #' @return Data frame.
 #' @export
-clean_data <- function(data) {
+clean_acs <- function(data) {
   if (!is.data.frame(data)) {
     stop("data must be a data frame.", call. = FALSE)
   }
