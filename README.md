@@ -5,11 +5,6 @@ acs
 
 Tools for working with [IPUMS](https://usa.ipums.org/usa/) ACS data.
 
-Installation
-------------
-
-To do.
-
 Examples
 --------
 
