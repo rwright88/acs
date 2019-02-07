@@ -11,6 +11,7 @@ clean_acs <- function(data) {
   params <- dplyr::tribble(
     ~var,       ~fun,
     "age",      rec_age,
+    "degfield", rec_degree,
     "educd",    rec_education,
     "met2013",  rec_metro,
     "sex",      rec_sex,

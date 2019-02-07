@@ -10,6 +10,15 @@ rec_age <- function(x) {
   out
 }
 
+# degfield ipums variable
+rec_degree <- function(x) {
+  code <- cw_degree[["degree_code"]]
+  name <- cw_degree[["degree_name"]]
+  out <- rep(NA_character_, length(x))
+  out <- name[match(x, code)]
+  out
+}
+
 # educd ipums variable
 rec_education <- function(x) {
   out <- rep(NA_character_, length(x))
