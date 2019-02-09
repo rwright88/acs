@@ -1,13 +1,10 @@
 to add:
 ----------------------------------------
-family interrelationship (multiple)
-bpl
-trantime
+many variables
 
 
 to recode:
 ----------------------------------------
-degfield
 incearn
 inctot
 occ2010
