@@ -13,5 +13,5 @@ clean_acs(data)
 Data frame.
 }
 \description{
-Clean IPUMS ACS data
+Currently, this only cleans/recodes a selection of variables.
 }

@@ -1,4 +1,9 @@
+# TODO:
+# Add more variables
+
 #' Clean IPUMS ACS data
+#'
+#' Currently, this only cleans/recodes a selection of variables.
 #'
 #' @param data Data frame of IPUMS ACS data.
 #' @return Data frame.
@@ -13,8 +18,10 @@ clean_acs <- function(data) {
     "age",      rec_age,
     "degfield", rec_degree,
     "educd",    rec_education,
+    "marst",    rec_married,
     "met2013",  rec_metro,
     "sex",      rec_sex,
+    "trantime", rec_travel,
     "classwkr", rec_work_class,
     "empstat",  rec_work_employ,
     "uhrswork", rec_work_hours,

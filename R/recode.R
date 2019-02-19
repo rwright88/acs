@@ -5,8 +5,9 @@
 
 # age ipums variable
 rec_age <- function(x) {
+  val <- (x %in% 0:89)
   out <- rep(NA_integer_, length(x))
-  out[x %in% 0:89] <- x[x %in% 0:89]
+  out[val] <- x[val]
   out
 }
 
@@ -27,6 +28,14 @@ rec_education <- function(x) {
   out[x %in% 65:99]   <- "some assoc"
   out[x %in% 100:109] <- "bachelor"
   out[x %in% 110:119] <- "advanced"
+  out
+}
+
+# marst ipums variable
+rec_married <- function(x) {
+  out <- rep(NA_character_, length(x))
+  out[x %in% 1:2] <- TRUE
+  out[x %in% 3:6] <- FALSE
   out
 }
 
@@ -59,6 +68,14 @@ rec_sex <- function(x) {
   out
 }
 
+# trantime ipums variable
+rec_travel <- function(x) {
+  val <- (x %in% 1:999)
+  out <- rep(NA_integer_, length(x))
+  out[val] <- x[val]
+  out
+}
+
 # classwkr ipums variable
 rec_work_class <- function(x) {
   out <- rep(NA_character_, length(x))
@@ -78,8 +95,9 @@ rec_work_employ <- function(x) {
 
 # uhrswork ipums variable
 rec_work_hours <- function(x) {
+  val <- (x %in% 1:99)
   out <- rep(NA_integer_, length(x))
-  out[x %in% 1:99] <- x[x %in% 1:99]
+  out[val] <- x[val]
   out
 }
 

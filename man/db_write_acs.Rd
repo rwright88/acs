@@ -13,5 +13,5 @@ db_write_acs(file_data, file_db)
 }
 \description{
 Write database table from IPUMS ACS CSV file. This will overwrite the
-existing database table with the same name.
+existing database file with the same name.
 }

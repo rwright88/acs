@@ -24,6 +24,11 @@ db_read_acs <- function(file_db, years, vars) {
     dplyr::select(vars) %>%
     dplyr::collect()
 
+  # fix data types
+  if ("INCEARN" %in% vars) {
+    data[["INCEARN"]] <- as.integer(data[["INCEARN"]])
+  }
+
   DBI::dbDisconnect(con)
   data
 }
