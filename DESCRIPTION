@@ -13,7 +13,6 @@ Depends:
 Imports: 
     DBI,
     dplyr,
-    magrittr,
     RSQLite
 Encoding: UTF-8
 LazyData: true
