@@ -55,8 +55,8 @@ plot_dist <- function(data, x, y, color, facet) {
 
 vars <- c("year", "perwt", "sex", "age", "race", "hispan", "wkswork2", "uhrswork", "incearn")
 
-dat <- db_read_acs(file_db = "~/data/acs/acsdb", years = 2017, vars = vars)
-dat <- clean_acs(dat)
+dat <- acs_db_read(file_db = "~/data/acs/acsdb", years = 2017, vars = vars)
+dat <- acs_clean(dat)
 dat <- filter(dat, age %in% 25:54)
 
 dat %>%

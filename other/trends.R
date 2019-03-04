@@ -18,10 +18,9 @@ calc_byyear <- function(years) {
       "occ2010", "wkswork2", "uhrswork", "incearn"
     )
 
-    data <- db_read_acs(file_db = file_db, years = .x, vars = vars)
-    data <- clean_acs(data)
+    data <- acs_db_read(file_db = file_db, years = .x, vars = vars)
+    data <- acs_clean(data)
     data <- filter(data, age %in% 25:54, uhrswork >= 20, str_detect(wkswork2, "27|40|48|50"))
-    # data <- filter(data, age %in% 25:54)
 
     out <- calc_earnq(data, by = c("year", "sex", "age", "race"))
     out
