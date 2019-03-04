@@ -5,7 +5,7 @@
 #' @param vars Variables in data to query (select).
 #' @return Data frame.
 #' @export
-db_read_acs <- function(file_db, years, vars) {
+acs_db_read <- function(file_db, years, vars) {
   if (!is.numeric(years)) {
     stop("`years` must be a numeric vector", call. = FALSE)
   }
@@ -38,7 +38,7 @@ db_read_acs <- function(file_db, years, vars) {
 #' @param file_db Path of database file to read.
 #' @return Character vector of variable names from database table.
 #' @export
-db_list_acs <- function(file_db) {
+acs_db_list <- function(file_db) {
   con <- DBI::dbConnect(RSQLite::SQLite(), file_db)
   vars <- DBI::dbListFields(con, "acs")
   DBI::dbDisconnect(con)

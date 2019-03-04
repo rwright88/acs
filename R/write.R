@@ -9,7 +9,7 @@
 #' @param file_data Path of CSV file of IPUMS ACS data.
 #' @param file_db Path of database to create.
 #' @export
-db_write_acs <- function(file_data, file_db) {
+acs_db_write <- function(file_data, file_db) {
   if (!file.exists(file_data)) {
     stop("`file_data` does not exist.", call. = FALSE)
   }

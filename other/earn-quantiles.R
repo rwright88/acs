@@ -11,8 +11,8 @@ vars    <- c("year", "perwt", "sex", "age", "degfield", "incearn")
 
 # run ---------------------------------------------------------------------
 
-dat <- db_read_acs(file_db, years = years, vars = vars)
-dat <- clean_acs(dat)
+dat <- acs_db_read(file_db, years = years, vars = vars)
+dat <- acs_clean(dat)
 
 quantiles <- dat %>%
   filter(sex == "male", age %in% 30:49) %>%

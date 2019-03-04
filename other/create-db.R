@@ -10,7 +10,7 @@ vars_read <- c("year", "perwt")
 
 # 2019-02-09: ~ 3GB / 280s
 system.time({
-  db_write_acs(
+  acs_db_write(
     file_data = file_data,
     file_db = file_db
   )
@@ -18,7 +18,7 @@ system.time({
 
 # 2019-02-09: ~ 8s
 system.time({
-  dat <- db_read_acs(
+  dat <- acs_db_read(
     file_db = file_db,
     years = years_read,
     vars = vars_read
@@ -27,7 +27,7 @@ system.time({
 
 # 2019-02-09: ~ 0.1s
 system.time({
-  dat <- clean_acs(dat)
+  dat <- acs_clean(dat)
 })
 
 dplyr::summarise(dplyr::group_by(dat, year), pop = sum(perwt))

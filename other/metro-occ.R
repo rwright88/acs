@@ -12,7 +12,7 @@ vars     <- c("year", "perwt", "met2013", "sex", "age", "race", "hispan", "educd
 
 # funs --------------------------------------------------------------------
 
-clean_acs2 <- function(data, file_occ) {
+acs_clean2 <- function(data, file_occ) {
   cw_occ <- read_csv(file_occ, col_types = "icc")
 
   data <- data %>%
@@ -41,9 +41,9 @@ rec_coder <- function(x) {
 
 # run ---------------------------------------------------------------------
 
-dat <- db_read_acs(file_db, years = years, vars = vars)
-dat <- clean_acs(dat)
-dat <- clean_acs2(dat, file_occ = file_occ)
+dat <- acs_db_read(file_db, years = years, vars = vars)
+dat <- acs_clean(dat)
+dat <- acs_clean2(dat, file_occ = file_occ)
 
 dists <- dat %>%
   filter(sex == "male", age %in% 25:54, race %in% c("white", "asian pi")) %>%

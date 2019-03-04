@@ -16,8 +16,8 @@ calc_byyear <- function(years) {
     file_db <- "~/data/acs/acsdb"
     vars <- c("year", "perwt", "sex", "age", "race", "hispan", "incearn")
 
-    dat <- db_read_acs(file_db = file_db, years = .x, vars = vars)
-    dat <- clean_acs(dat)
+    dat <- acs_db_read(file_db = file_db, years = .x, vars = vars)
+    dat <- acs_clean(dat)
 
     dat <- dat %>%
       filter(age %in% 25:54)
