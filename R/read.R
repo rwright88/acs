@@ -7,10 +7,10 @@
 #' @export
 db_read_acs <- function(file_db, years, vars) {
   if (!is.numeric(years)) {
-    stop("years must be a numeric vector", call. = FALSE)
+    stop("`years` must be a numeric vector", call. = FALSE)
   }
   if (!is.character(vars)) {
-    stop("vars must be a character vector", call. = FALSE)
+    stop("`vars` must be a character vector", call. = FALSE)
   }
 
   vars <- toupper(vars)

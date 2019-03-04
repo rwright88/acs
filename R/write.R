@@ -10,6 +10,9 @@
 #' @param file_db Path of database to create.
 #' @export
 db_write_acs <- function(file_data, file_db) {
+  if (!file.exists(file_data)) {
+    stop("`file_data` does not exist.", call. = FALSE)
+  }
   names1 <- names(read.csv(file_data, nrows = 1))
   n_cols <- length(names1)
   types  <- rep("integer", n_cols)

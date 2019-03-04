@@ -10,7 +10,7 @@
 #' @export
 clean_acs <- function(data) {
   if (!is.data.frame(data)) {
-    stop("data must be a data frame.", call. = FALSE)
+    stop("`data` must be a data frame.", call. = FALSE)
   }
 
   params <- dplyr::tribble(
