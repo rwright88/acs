@@ -23,9 +23,9 @@ rec_degree <- function(x) {
 # educd ipums variable
 rec_education <- function(x) {
   out <- rep(NA_character_, length(x))
-  out[x %in% 10:59]   <- "less high"
-  out[x %in% 60:64]   <- "high school"
-  out[x %in% 65:99]   <- "some assoc"
+  out[x %in% 0:59]    <- "less-hs"
+  out[x %in% 60:64]   <- "hs-ged"
+  out[x %in% 65:99]   <- "assoc-some"
   out[x %in% 100:109] <- "bachelor"
   out[x %in% 110:119] <- "advanced"
   out
@@ -54,7 +54,7 @@ rec_race <- function(race, hisp) {
   out <- rep(NA_character_, length(race))
   out[race == 1     & hisp == 0]     <- "white"
   out[race == 2     & hisp == 0]     <- "black"
-  out[race %in% 4:6 & hisp == 0]     <- "asian pi"
+  out[race %in% 4:6 & hisp == 0]     <- "asian-pi"
   out[race %in% oth & hisp == 0]     <- "other"
   out[                hisp %in% 1:4] <- "hispanic"
   out
@@ -87,23 +87,23 @@ rec_work_class <- function(x) {
 # empstat ipums variable
 rec_work_employ <- function(x) {
   out <- rep(NA_character_, length(x))
-  out[x == 1] <- "employed"
-  out[x == 2] <- "unemployed"
-  out[x == 3] <- "not in lf"
+  out[x == 1]         <- "employed"
+  out[x == 2]         <- "unemployed"
+  out[x %in% c(0, 3)] <- "not in lf"
   out
 }
 
 # uhrswork ipums variable
 rec_work_hours <- function(x) {
-  val <- (x %in% 1:99)
   out <- rep(NA_integer_, length(x))
-  out[val] <- x[val]
+  out[x %in% 0:98] <- x[x %in% 0:98]
   out
 }
 
 # wkswork2 ipums variable
 rec_work_weeks <- function(x) {
   out <- rep(NA_character_, length(x))
+  out[x == 0] <- "0 weeks"
   out[x == 1] <- "1-13 weeks"
   out[x == 2] <- "14-26 weeks"
   out[x == 3] <- "27-39 weeks"
