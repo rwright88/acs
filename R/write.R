@@ -22,6 +22,7 @@ acs_db_write <- function(file_data, file_db) {
     file.remove(file_db)
   }
   con <- DBI::dbConnect(RSQLite::SQLite(), file_db)
+  on.exit(DBI::dbDisconnect(con))
 
   DBI::dbWriteTable(
     conn = con,
@@ -33,5 +34,4 @@ acs_db_write <- function(file_data, file_db) {
   )
 
   DBI::dbExecute(con, statement = "CREATE INDEX idx1 ON acs(YEAR)")
-  DBI::dbDisconnect(con)
 }

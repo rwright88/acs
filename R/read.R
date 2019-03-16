@@ -17,19 +17,18 @@ acs_db_read <- function(file_db, years, vars) {
   YEAR <- NULL
 
   con <- DBI::dbConnect(RSQLite::SQLite(), file_db)
+  on.exit(DBI::dbDisconnect(con))
 
-  data <- con %>%
-    dplyr::tbl("acs") %>%
-    dplyr::filter(YEAR %in% years) %>%
-    dplyr::select(vars) %>%
-    dplyr::collect()
+  data <- dplyr::tbl(src = con, "acs")
+  data <- dplyr::filter(data, YEAR %in% years)
+  data <- dplyr::select(data, vars)
+  data <- dplyr::collect(data)
 
   # fix data types
   if ("INCEARN" %in% vars) {
     data[["INCEARN"]] <- as.integer(data[["INCEARN"]])
   }
 
-  DBI::dbDisconnect(con)
   data
 }
 
@@ -40,7 +39,7 @@ acs_db_read <- function(file_db, years, vars) {
 #' @export
 acs_db_list <- function(file_db) {
   con <- DBI::dbConnect(RSQLite::SQLite(), file_db)
+  on.exit(DBI::dbDisconnect(con))
   vars <- DBI::dbListFields(con, "acs")
-  DBI::dbDisconnect(con)
   vars
 }

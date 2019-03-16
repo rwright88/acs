@@ -30,7 +30,7 @@ acs_clean <- function(data) {
 
   names(data) <- tolower(names(data))
   vars <- names(data)
-  params <- dplyr::filter(params, var %in% vars)
+  params <- params[params$var %in% vars, ]
 
   for (i in seq_along(params[["var"]])) {
     var <- params[["var"]][[i]]
