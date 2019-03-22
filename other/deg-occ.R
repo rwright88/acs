@@ -50,10 +50,10 @@ dists <- dat %>%
   filter(race == "white", age %in% 30:49) %>%
   calc_dists(
     by1 = c("sex"),
-    by2 = c("degfield"),
+    by2 = c("educd", "degfield"),
     type = "median"
   )
 
 dists %>%
-  filter(sex == "male") %>%
+  filter(sex == "male", educd != "advanced") %>%
   arrange(desc(earn_stat))
