@@ -22,7 +22,7 @@ calc_by_year <- function(years) {
 
     data <- acs_db_read(file_db = file_db, years = year, vars = vars)
     data <- acs_clean(data)
-    data <- filter(data, age %in% 25:34)
+    data <- filter(data, age %in% 30:49, race == "white")
 
     data$educd[data$educd %in% c("less-hs", "hs-ged")] <- "hs-or-less"
     data$educd[data$educd %in% c("bachelor", "advanced")] <- "bach-plus"
@@ -36,7 +36,7 @@ calc_by_year <- function(years) {
         earn_p50 = round(Hmisc::wtd.quantile(incearn, perwt, probs = 0.5), -3)
       ) %>%
       group_by(year, sex) %>%
-      mutate(percent = pop / sum(pop) * 100) %>%
+      mutate(percent = round(pop / sum(pop) * 100, 2)) %>%
       ungroup()
 
     out$earn_mean[out$n < 100] <- NA
@@ -50,11 +50,8 @@ calc_by_year <- function(years) {
 
 rec_occupation <- function(data, file_occ = "data-raw/cw-occupation.csv") {
   cw_occ <- read_csv(file_occ, col_types = "icc")
-
-  data <- data %>%
-    left_join(cw_occ, by = c("occ2010" = "occ_code")) %>%
-    mutate_at(c("occ_cat_name", "occ_name"), str_to_lower)
-
+  data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
+  data <- mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
   data
 }
 
@@ -97,7 +94,7 @@ summary2(res)
 res %>%
   filter(year == max(year), sex == "male") %>%
   mutate(degfield = str_sub(degfield, 1, 20)) %>%
-  arrange(desc(earn_p50))
+  arrange(desc(earn_mean))
 
 res %>%
   filter(year %in% c(2010, 2017), sex == "male") %>%
