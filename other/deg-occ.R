@@ -68,8 +68,8 @@ calc_dists <- function(data, by1, by2) {
     left_join(dists_tot, by = by2) %>%
     arrange(!!!by1_, desc(pop))
 
-  dists$earn_mean[dists$earn_mean < 100] <- NA_real_
-  dists$earn_p50[dists$earn_p50 < 100] <- NA_real_
+  dists$earn_mean[dists$n < 100] <- NA_real_
+  dists$earn_p50[dists$n < 100] <- NA_real_
   dists
 }
 
