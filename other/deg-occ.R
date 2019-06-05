@@ -3,17 +3,22 @@
 library(tidyverse)
 library(acs)
 
-file_db  <- "~/data/acs/acsdb"
-file_occ <- "data-raw/cw-occupation.csv"
-years    <- 2015:2017
-vars     <- c("year", "perwt", "sex", "age", "race", "hispan", "educd", "degfield", "occ2010", "incearn")
+file_db <- "~/data/acs/acsdb"
+years <- 2017
 
 # funs --------------------------------------------------------------------
 
-acs_clean2 <- function(data, file_occ) {
-  cw_occ <- read_csv(file_occ, col_types = "icc")
+get_data <- function(file_db, years) {
+  vars <- c("year", "perwt", "sex", "age", "race", "hispan", "educd", "degfield", "occ2010", "incearn")
+  data <- acs::acs_db_read(file_db, years = years, vars = vars)
+  data <- acs::acs_clean(data)
+
+  cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
   data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
   data <- mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
+
+  data$stem <- rec_stem(data$degfield)
+  data$coder <- rec_coder(data$occ_name)
   data
 }
 
@@ -75,19 +80,14 @@ calc_dists <- function(data, by1, by2) {
 
 # run ---------------------------------------------------------------------
 
-dat <- acs_db_read(file_db, years = years, vars = vars)
-dat <- acs_clean(dat)
-dat <- acs_clean2(dat, file_occ = file_occ)
-dat$stem <- rec_stem(dat$degfield)
-dat$coder <- rec_coder(dat$occ_name)
+data <- get_data(file_db, years)
 
-res <- dat %>%
+res <- data %>%
   filter(age %in% 26:36) %>%
   calc_dists(
-    by1 = c("sex", "race"),
-    by2 = c("coder", "stem")
+    by1 = c("sex"),
+    by2 = c("educd")
   )
 
 res %>%
-  filter(sex == "male", race == "white") %>%
-  arrange(desc(earn_p50))
+  arrange(desc(earn_mean))
