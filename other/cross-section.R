@@ -1,4 +1,4 @@
-# degree by occupation stats
+# cross section
 
 library(tidyverse)
 library(acs)
@@ -9,7 +9,7 @@ years <- 2017
 # funs --------------------------------------------------------------------
 
 get_data <- function(file_db, years) {
-  vars <- c("year", "perwt", "sex", "age", "race", "hispan", "educd", "degfield", "occ2010", "incearn")
+  vars <- c("year", "perwt", "met2013", "sex", "age", "race", "hispan", "educd", "degfield", "occ2010", "incearn")
   data <- acs::acs_db_read(file_db, years = years, vars = vars)
   data <- acs::acs_clean(data)
 
@@ -47,10 +47,10 @@ rec_coder <- function(x) {
   out
 }
 
-calc_dists <- function(data, by1, by2) {
+calc_stats <- function(data, by1, by2) {
   by1_ <- syms(by1)
   by2_ <- syms(by2)
-  n_years <- length(unique(data[["year"]]))
+  n_years <- length(unique(data$year))
 
   dists_tot <- data %>%
     group_by(!!!by2_) %>%
@@ -59,7 +59,7 @@ calc_dists <- function(data, by1, by2) {
     mutate(perc_all = round(pop / sum(pop) * 100, 1)) %>%
     select(-pop)
 
-  dists <- data %>%
+  out <- data %>%
     group_by(!!!by1_, !!!by2_) %>%
     summarise(
       n = n(),
@@ -70,12 +70,11 @@ calc_dists <- function(data, by1, by2) {
     group_by(!!!by1_) %>%
     mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
     ungroup() %>%
-    left_join(dists_tot, by = by2) %>%
-    arrange(!!!by1_, desc(pop))
+    left_join(dists_tot, by = by2)
 
-  dists$earn_mean[dists$n < 100] <- NA_real_
-  dists$earn_p50[dists$n < 100] <- NA_real_
-  dists
+  out$earn_mean[out$n < 100] <- NA
+  out$earn_p50[out$n < 100] <- NA
+  out
 }
 
 # run ---------------------------------------------------------------------
@@ -83,11 +82,7 @@ calc_dists <- function(data, by1, by2) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(age %in% 26:36) %>%
-  calc_dists(
-    by1 = c("sex"),
-    by2 = c("educd")
-  )
+  filter(age %in% 25:54) %>%
+  calc_stats(by1 = "met2013", by2 = "degfield")
 
-res %>%
-  arrange(desc(earn_mean))
+res
