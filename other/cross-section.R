@@ -4,7 +4,7 @@ library(tidyverse)
 library(acs)
 
 file_db <- "~/data/acs/acsdb"
-years <- 2017
+years <- 2015:2017
 
 # funs --------------------------------------------------------------------
 
@@ -51,6 +51,7 @@ calc_stats <- function(data, by1, by2) {
   by1_ <- syms(by1)
   by2_ <- syms(by2)
   n_years <- length(unique(data$year))
+  probs <- c(0.1, 0.3, 0.5, 0.7, 0.9)
 
   dists_tot <- data %>%
     group_by(!!!by2_) %>%
@@ -63,17 +64,18 @@ calc_stats <- function(data, by1, by2) {
     group_by(!!!by1_, !!!by2_) %>%
     summarise(
       n = n(),
-      pop = sum(perwt) / n_years,
-      earn_mean = round(weighted.mean(incearn, perwt), -3),
-      earn_p50 = round(Hmisc::wtd.quantile(incearn, perwt, probs = 0.5), -3)
+      pop = sum(perwt) / !!n_years,
+      p = list(paste0("p_", !!probs * 100)),
+      q = list(round(Hmisc::wtd.quantile(incearn, perwt, probs = !!probs), -3))
     ) %>%
     group_by(!!!by1_) %>%
     mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
-    ungroup() %>%
-    left_join(dists_tot, by = by2)
+    ungroup()
 
-  out$earn_mean[out$n < 100] <- NA
-  out$earn_p50[out$n < 100] <- NA
+  out <- left_join(out, dists_tot, by = by2)
+  out <- unnest(out)
+  out$q[out$n < 100] <- NA
+  out <- spread(out, p, q)
   out
 }
 
@@ -82,7 +84,9 @@ calc_stats <- function(data, by1, by2) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(age %in% 25:54) %>%
-  calc_stats(by1 = "met2013", by2 = "degfield")
+  filter(sex == "male", age %in% 25:54) %>%
+  calc_stats(by1 = "met2013", by2 = "met2013")
 
-res
+res %>%
+  arrange(desc(p_50)) %>%
+  print(n = Inf)
