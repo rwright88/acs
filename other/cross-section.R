@@ -47,11 +47,10 @@ rec_coder <- function(x) {
   out
 }
 
-calc_stats <- function(data, by1, by2) {
+calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
   by1_ <- syms(by1)
   by2_ <- syms(by2)
   n_years <- length(unique(data$year))
-  probs <- c(0.1, 0.3, 0.5, 0.7, 0.9)
 
   dists_tot <- data %>%
     group_by(!!!by2_) %>%
@@ -84,9 +83,10 @@ calc_stats <- function(data, by1, by2) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(sex == "male", age %in% 25:54) %>%
-  calc_stats(by1 = "met2013", by2 = "met2013")
+  filter(sex == "male", age %in% 26:36) %>%
+  calc_stats(by1 = "met2013", by2 = "met2013", probs = seq(0.1, 0.9, by = 0.2))
 
 res %>%
+  # filter(str_detect(met2013, ", pa|, nv|, va")) %>%
   arrange(desc(p_50)) %>%
   print(n = Inf)
