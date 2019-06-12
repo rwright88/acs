@@ -9,7 +9,10 @@ years <- 2015:2017
 # funs --------------------------------------------------------------------
 
 get_data <- function(file_db, years) {
-  vars <- c("year", "perwt", "met2013", "sex", "age", "race", "hispan", "educd", "degfield", "occ2010", "incearn")
+  vars <- c(
+    "year", "perwt", "met2013", "sex", "age", "race", "hispan",
+    "educd", "degfield", "occ2010", "uhrswork", "incearn"
+  )
   data <- acs::acs_db_read(file_db, years = years, vars = vars)
   data <- acs::acs_clean(data)
 
@@ -83,10 +86,11 @@ calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(sex == "male", age %in% 26:36) %>%
-  calc_stats(by1 = "met2013", by2 = "met2013", probs = seq(0.1, 0.9, by = 0.2))
+  filter(sex == "male", age %in% 25:54, uhrswork > 0) %>%
+  calc_stats(by1 = "met2013", by2 = "stem")
 
 res %>%
-  # filter(str_detect(met2013, ", pa|, nv|, va")) %>%
-  arrange(desc(p_50)) %>%
+  filter(stem == "stem-degree") %>%
+  filter(str_detect(met2013, ", pa|, nv|, va")) %>%
+  arrange(desc(percent)) %>%
   print(n = Inf)
