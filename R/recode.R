@@ -76,6 +76,13 @@ rec_travel <- function(x) {
   out
 }
 
+# incwage ipums variable
+rec_wage <- function(x) {
+  x[x == 9999998] <- NA
+  x[x == 9999999] <- 0
+  x
+}
+
 # classwkr ipums variable
 rec_work_class <- function(x) {
   out <- rep(NA_character_, length(x))

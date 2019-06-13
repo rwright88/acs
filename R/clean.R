@@ -22,6 +22,7 @@ acs_clean <- function(data) {
     "met2013",  rec_metro,
     "sex",      rec_sex,
     "trantime", rec_travel,
+    "incwage",  rec_wage,
     "classwkr", rec_work_class,
     "empstat",  rec_work_employ,
     "uhrswork", rec_work_hours,
@@ -38,10 +39,9 @@ acs_clean <- function(data) {
     data[[var]] <- fun(data[[var]])
   }
 
-  # for now, for functions with more than 1 arguement
   if ("race" %in% vars && "hispan" %in% vars) {
-    data[["race"]] <- rec_race(data[["race"]], data[["hispan"]])
-    data[["hispan"]] <- NULL
+    data$race <- rec_race(data$race, data$hispan)
+    data$hispan <- NULL
   }
 
   data

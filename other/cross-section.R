@@ -11,7 +11,7 @@ years <- 2015:2017
 get_data <- function(file_db, years) {
   vars <- c(
     "year", "perwt", "met2013", "sex", "age", "race", "hispan",
-    "educd", "degfield", "occ2010", "uhrswork", "incearn"
+    "educd", "degfield", "occ2010", "uhrswork", "incwage"
   )
   data <- acs::acs_db_read(file_db, years = years, vars = vars)
   data <- acs::acs_clean(data)
@@ -68,7 +68,7 @@ calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
       n = n(),
       pop = sum(perwt) / !!n_years,
       p = list(paste0("p_", !!probs * 100)),
-      q = list(round(Hmisc::wtd.quantile(incearn, perwt, probs = !!probs), -3))
+      q = list(round(Hmisc::wtd.quantile(incwage, perwt, probs = !!probs), -3))
     ) %>%
     group_by(!!!by1_) %>%
     mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
@@ -86,11 +86,10 @@ calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(sex == "male", age %in% 25:54, uhrswork > 0) %>%
-  calc_stats(by1 = "met2013", by2 = "stem")
+  filter(sex == "male", age %in% 25:55, incwage > 0) %>%
+  calc_stats(by1 = "met2013", by2 = "met2013")
 
 res %>%
-  filter(stem == "stem-degree") %>%
   filter(str_detect(met2013, ", pa|, nv|, va")) %>%
-  arrange(desc(percent)) %>%
+  arrange(desc(p_50)) %>%
   print(n = Inf)
