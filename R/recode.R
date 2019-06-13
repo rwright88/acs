@@ -78,8 +78,8 @@ rec_travel <- function(x) {
 
 # incwage ipums variable
 rec_wage <- function(x) {
-  x[x == 9999998] <- NA
-  x[x == 9999999] <- 0
+  x[x == 999998] <- NA
+  x[x == 999999] <- 0
   x
 }
 
