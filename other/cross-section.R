@@ -4,7 +4,7 @@ library(tidyverse)
 library(acs)
 
 file_db <- "~/data/acs/acsdb"
-years <- 2015:2017
+years <- 2017
 
 # funs --------------------------------------------------------------------
 
@@ -19,38 +19,10 @@ get_data <- function(file_db, years) {
   cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
   data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
   data <- mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
-
-  data$stem <- rec_stem(data$degfield)
-  data$coder <- rec_coder(data$occ_name)
   data
 }
 
-rec_stem <- function(x) {
-  stem <- c(
-    "computer and information sciences",
-    "engineering",
-    "mathematics and statistics"
-  )
-  out <- rep("no-degree", length(x))
-  out[x %in% stem] <- "stem-degree"
-  out[!(x %in% stem) & !is.na(x)] <- "other-degree"
-  out
-}
-
-rec_coder <- function(x) {
-  coder <- c(
-    "computer scientists and systems analysts/network systems analysts/web developers",
-    "computer programmers",
-    "software developers, applications and systems software",
-    "database administrators"
-  )
-  out <- rep(NA_character_, length(x))
-  out[x %in% coder] <- "coder"
-  out[!(x %in% coder) & !is.na(x)] <- "other"
-  out
-}
-
-calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
+calc_stats <- function(data, by1, by2, probs = seq(0.1, 0.9, 0.01)) {
   by1_ <- syms(by1)
   by2_ <- syms(by2)
   n_years <- length(unique(data$year))
@@ -67,7 +39,7 @@ calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
     summarise(
       n = n(),
       pop = sum(perwt) / !!n_years,
-      p = list(paste0("p_", !!probs * 100)),
+      p = list(!!probs),
       q = list(round(Hmisc::wtd.quantile(incwage, perwt, probs = !!probs), -3))
     ) %>%
     group_by(!!!by1_) %>%
@@ -77,8 +49,20 @@ calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
   out <- left_join(out, dists_tot, by = by2)
   out <- unnest(out)
   out$q[out$n < 100] <- NA
-  out <- spread(out, p, q)
   out
+}
+
+plot_stats <- function(data, color) {
+  color_ <- sym(color)
+
+  data %>%
+    ggplot(aes(p, q, color = !!color_)) +
+    geom_point(size = 1.5, alpha = 0.2) +
+    geom_smooth(span = 0.5, se = FALSE, size = 1) +
+    scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
+    scale_y_continuous(limits = c(0, NA), breaks = seq(0, 5e5, 2e4), minor_breaks = NULL, labels = scales::comma) +
+    scale_color_brewer(type = "qual", palette = "Set1") +
+    theme_bw()
 }
 
 # run ---------------------------------------------------------------------
@@ -86,10 +70,11 @@ calc_stats <- function(data, by1, by2, probs = c(0.25, 0.5, 0.75)) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(sex == "male", age %in% 25:55, incwage > 0) %>%
+  filter(sex == "male", age %in% 25:35, incwage > 0) %>%
   calc_stats(by1 = "met2013", by2 = "met2013")
 
 res %>%
-  filter(str_detect(met2013, ", pa|, nv|, va")) %>%
-  arrange(desc(p_50)) %>%
-  print(n = Inf)
+  filter(str_detect(met2013, "new york|seattle|harrisburg|las vegas")) %>%
+  mutate(met2013 = str_sub(met2013, 1, 20)) %>%
+  mutate(met2013 = reorder(met2013, desc(q))) %>%
+  plot_stats(color = "met2013")
