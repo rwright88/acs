@@ -60,7 +60,7 @@ plot_stats <- function(data, color) {
     geom_point(size = 1.5, alpha = 0.2) +
     geom_smooth(span = 0.5, se = FALSE, size = 1) +
     scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
-    scale_y_continuous(limits = c(0, NA), breaks = seq(0, 5e5, 2e4), minor_breaks = NULL, labels = scales::comma) +
+    scale_y_continuous(limits = c(0, NA), breaks = seq(0, 5e5, 2e4), labels = scales::comma) +
     scale_color_brewer(type = "qual", palette = "Set1") +
     theme_bw()
 }
@@ -70,11 +70,11 @@ plot_stats <- function(data, color) {
 data <- get_data(file_db, years)
 
 res <- data %>%
-  filter(sex == "male", age %in% 25:35, incwage > 0) %>%
+  filter(sex == "male", age %in% 25:55, incwage > 0) %>%
   calc_stats(by1 = "met2013", by2 = "met2013")
 
 res %>%
-  filter(str_detect(met2013, "new york|seattle|harrisburg|las vegas")) %>%
+  filter(str_detect(met2013, "seattle|harrisburg|las vegas")) %>%
   mutate(met2013 = str_sub(met2013, 1, 20)) %>%
   mutate(met2013 = reorder(met2013, desc(q))) %>%
   plot_stats(color = "met2013")
