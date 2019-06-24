@@ -2,82 +2,71 @@
 
 library(tidyverse)
 library(acs)
-library(rwmisc)
 
 years <- 2010:2017
 
 # funs --------------------------------------------------------------------
 
 calc_by_year <- function(years) {
-  if (!all(years %in% c(1980, 1990, 2000, 2010:2017))) {
-    stop("years is out of range.")
-  }
+  stopifnot(all(years %in% c(1980, 1990, 2000, 2010:2017)))
 
-  out <- lapply(years, function(year) {
+  out <- lapply(years, function(.x) {
     file_db <- "~/data/acs/acsdb"
     vars <- c(
-      "year", "perwt", "sex", "age", "race", "hispan", "educd", "degfield",
-      "occ2010", "incearn"
+      "year", "perwt", "met2013", "sex", "age", "race", "hispan",
+      "educd", "degfield", "occ2010", "uhrswork", "incwage"
     )
+    data <- acs::acs_db_read(file_db, years = .x, vars = vars)
+    data <- acs::acs_clean(data)
+    data <- filter(data, age %in% 25:35)
+    # data <- rec_occup(data)
+    data$coder <- (data$occ2010 %in% c(1000, 1010, 1020, 1060))
 
-    data <- acs_db_read(file_db = file_db, years = year, vars = vars)
-    data <- acs_clean(data)
-    data <- filter(data, age %in% 30:49, race == "white")
-
-    data$educd[data$educd %in% c("less-hs", "hs-ged")] <- "hs-or-less"
-    data$educd[data$educd %in% c("bachelor", "advanced")] <- "bach-plus"
+    by1 <- c("year", "sex", "race", "coder")
+    by2 <- c("year", "sex", "race")
 
     out <- data %>%
-      group_by(year, sex, educd, degfield) %>%
-      summarise(
-        n = n(),
-        pop = sum(perwt),
-        earn_mean = round(weighted.mean(incearn, perwt), -3),
-        earn_p50 = round(Hmisc::wtd.quantile(incearn, perwt, probs = 0.5), -3)
-      ) %>%
-      group_by(year, sex) %>%
-      mutate(percent = round(pop / sum(pop) * 100, 2)) %>%
+      group_by(!!!syms(by1)) %>%
+      summarise(n = n(), pop = sum(perwt)) %>%
+      group_by(!!!syms(by2)) %>%
+      mutate(percent = pop / sum(pop) * 100) %>%
       ungroup()
 
-    out$earn_mean[out$n < 100] <- NA
-    out$earn_p50[out$n < 100] <- NA
-    out[, c("year", "sex", "educd", "degfield", "n", "pop", "percent", "earn_mean", "earn_p50")]
+    wage <- data %>%
+      filter(incwage > 0) %>%
+      group_by(!!!syms(by1)) %>%
+      summarise(wage_p50 = Hmisc::wtd.quantile(incwage, perwt, probs = 0.5)) %>%
+      ungroup()
+
+    out <- left_join(out, wage, by = by1)
+    out$wage_p50[out$n < 100] <- NA
+    out
   })
 
-  out <- bind_rows(out)
-  out
+  bind_rows(out)
 }
 
-rec_occupation <- function(data, file_occ = "data-raw/cw-occupation.csv") {
-  cw_occ <- read_csv(file_occ, col_types = "icc")
+rec_occup <- function(data) {
+  cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
   data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
   data <- mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
   data
 }
 
-plot_trend <- function(data, y, color, facet = NULL, n_col = NULL) {
-  y <- sym(y)
-  color <- sym(color)
+plot_trend <- function(data, y, color, facet = NULL) {
+  y_ <- sym(y)
+  color_ <- sym(color)
 
   p <- data %>%
-    ggplot(aes(year, !!y, color = !!color)) +
+    ggplot(aes(year, !!y_, color = !!color_)) +
     geom_point(size = 2) +
     geom_line(size = 1) +
-    ggrepel::geom_text_repel(
-      mapping = aes(label = format(round(!!y * 100, 1), nsmall = 1)),
-      data = filter(data, year %in% c(min(year), max(year))),
-      size = 3.5,
-      box.padding = 0.5,
-      direction = "y",
-      show.legend = FALSE
-    ) +
-    scale_x_continuous(minor_breaks = NULL) +
-    scale_y_continuous(limits = c(0, NA), minor_breaks = NULL) +
+    scale_y_continuous(limits = c(0, NA)) +
     scale_color_brewer(type = "qual", palette = "Set1") +
-    theme_rw()
+    theme_bw()
 
   if (!is.null(facet)) {
-    p <- p + facet_wrap(facet, ncol = n_col)
+    p <- p + facet_wrap(facet)
   }
 
   p
@@ -85,21 +74,8 @@ plot_trend <- function(data, y, color, facet = NULL, n_col = NULL) {
 
 # run ---------------------------------------------------------------------
 
-system.time({
-  res <- calc_by_year(years = years)
-})
-
-summary2(res)
+res <- calc_by_year(years = years)
 
 res %>%
-  filter(year == max(year), sex == "male") %>%
-  mutate(degfield = str_sub(degfield, 1, 20)) %>%
-  arrange(desc(earn_mean))
-
-res %>%
-  filter(year %in% c(2010, 2017), sex == "male") %>%
-  select(year, sex, educd, degfield, percent) %>%
-  spread(year, percent) %>%
-  mutate(diff = `2017` - `2010`) %>%
-  mutate(degfield = str_sub(degfield, 1, 20)) %>%
-  arrange(desc(`2017`))
+  filter(race != "other", coder == TRUE) %>%
+  plot_trend(y = "percent", color = "race", facet = "sex")
