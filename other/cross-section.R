@@ -40,7 +40,7 @@ calc_stats <- function(data, by1, by2, probs = seq(0.1, 0.9, 0.01)) {
       n = n(),
       pop = sum(perwt) / !!n_years,
       p = list(!!probs),
-      q = list(Hmisc::wtd.quantile(incwage, perwt, probs = !!probs))
+      q = list(rwmisc::wtd_quantile(incwage, perwt, probs = !!probs))
     ) %>%
     group_by(!!!by1_) %>%
     mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
