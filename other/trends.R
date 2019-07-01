@@ -4,7 +4,7 @@ library(tidyverse)
 library(acs)
 library(rwmisc)
 
-years <- c(2000, 2010, 2017)
+years <- c(1990, 2000, 2010, 2017)
 
 # funs --------------------------------------------------------------------
 
@@ -19,13 +19,13 @@ calc_by_year <- function(years) {
     )
     data <- acs::acs_db_read(file_db, years = .x, vars = vars)
     data <- acs::acs_clean(data)
-    data <- filter(data, age %in% 25:55)
-    # data$age <- round((data$age + 0.1) / 10) * 10
+    data <- filter(data, age %in% 25:54)
+    data$age <- round((data$age + 0.1) / 10) * 10
     data <- rec_occup(data)
     # data$coder <- (data$occ2010 %in% c(1000, 1010, 1020, 1060))
 
-    by1 <- c("year", "sex", "occ_cat_name")
-    by2 <- c("year", "sex")
+    by1 <- c("year", "sex", "age", "occ_cat_name")
+    by2 <- c("year", "sex", "age")
 
     out <- data %>%
       group_by(!!!syms(by1)) %>%
@@ -51,8 +51,7 @@ calc_by_year <- function(years) {
 rec_occup <- function(data) {
   cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
   data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
-  data <- mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
-  data
+  mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
 }
 
 plot_trend <- function(data, y, color, facet = NULL) {
@@ -78,6 +77,7 @@ plot_trend <- function(data, y, color, facet = NULL) {
 res <- calc_by_year(years = years)
 
 res %>%
+  filter(age == 30) %>%
   mutate(occ_cat_name = str_sub(occ_cat_name, 1, 20)) %>%
   mutate(occ_cat_name = reorder(occ_cat_name, desc(percent))) %>%
   plot_trend(y = "percent", color = "sex", facet = "occ_cat_name") +
