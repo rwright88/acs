@@ -1,7 +1,11 @@
 # cross section
 
-library(tidyverse)
 library(acs)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(rwmisc)
+library(tidyr)
 
 file_db <- "~/data/acs/acsdb"
 years <- 2017
@@ -18,7 +22,7 @@ get_data <- function(file_db, years) {
 
   cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
   data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
-  data <- mutate_at(data, c("occ_cat_name", "occ_name"), str_to_lower)
+  data <- mutate_at(data, c("occ_cat_name", "occ_name"), tolower)
   data
 }
 
@@ -74,7 +78,7 @@ res <- data %>%
   calc_stats(by1 = "met2013", by2 = "met2013")
 
 res %>%
-  filter(str_detect(met2013, "seattle|harrisburg|las vegas")) %>%
-  mutate(met2013 = str_sub(met2013, 1, 20)) %>%
+  filter(grepl("seattle|harrisburg|las vegas", met2013)) %>%
+  mutate(met2013 = substr(met2013, 1, 20)) %>%
   mutate(met2013 = reorder(met2013, desc(q))) %>%
   plot_stats(color = "met2013")
