@@ -62,7 +62,6 @@ plot_trend <- function(data, y, color, facet = NULL) {
 
   out <- data %>%
     ggplot(aes(year, !!y_, color = !!color_)) +
-    # geom_point(size = 2) +
     geom_line(size = 1) +
     scale_x_continuous(minor_breaks = NULL) +
     scale_color_brewer(type = "qual", palette = "Set1") +
@@ -79,19 +78,19 @@ plot_trend <- function(data, y, color, facet = NULL) {
 
 res <- calc_by_year(years = years)
 
-plot_custom <- function(res) {
-  res2 <- res %>%
+plot_trend_percent <- function(data) {
+  data <- data %>%
     mutate(occ_cat_name = substr(occ_cat_name, 1, 20)) %>%
     mutate(occ_cat_name = reorder(occ_cat_name, desc(percent)))
 
-  res3 <- res2 %>%
+  points <- data %>%
     filter(year %% 10 == 0 | year == max(year))
 
-  res2 %>%
+  data %>%
     plot_trend(y = "percent", color = "sex", facet = "occ_cat_name") +
-    geom_point(data = res3, mapping = aes(year, percent, color = sex), size = 2) +
+    geom_point(data = points, mapping = aes(year, percent, color = sex), size = 2) +
     ggrepel::geom_text_repel(
-      data = res3,
+      data = points,
       mapping = aes(label = format(round(percent, 1), nsmall = 1)),
       size = 3,
       nudge_y = 1,
@@ -100,7 +99,29 @@ plot_custom <- function(res) {
     scale_y_continuous(breaks = seq(0, 100, 5), minor_breaks = NULL) +
     coord_cartesian(ylim = c(0, 15))
 }
+plot_trend_percent(res)
+ggsave("~/trends-percent.png", dpi = 300, width = 10, height = 8)
 
-plot_custom(res)
+plot_trend_wage <- function(data) {
+  data <- data %>%
+    mutate(occ_cat_name = substr(occ_cat_name, 1, 20)) %>%
+    mutate(occ_cat_name = reorder(occ_cat_name, desc(wage_p50)))
 
-ggsave("~/trends.png", dpi = 300, width = 10, height = 8)
+  points <- data %>%
+    filter(year %% 10 == 0 | year == max(year))
+
+  data %>%
+    plot_trend(y = "wage_p50", color = "sex", facet = "occ_cat_name") +
+    geom_point(data = points, mapping = aes(year, wage_p50, color = sex), size = 2) +
+    ggrepel::geom_text_repel(
+      data = points,
+      mapping = aes(label = paste0(round(wage_p50 / 1e3), "k")),
+      size = 3,
+      nudge_y = 1,
+      direction = "y"
+    ) +
+    scale_y_continuous(breaks = seq(0, 2e5, 2e4), minor_breaks = NULL) +
+    coord_cartesian(ylim = c(0, 1e5))
+}
+plot_trend_wage(res)
+ggsave("~/trends-wage.png", dpi = 300, width = 10, height = 8)
