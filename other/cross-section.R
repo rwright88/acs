@@ -26,10 +26,11 @@ get_data <- function(file_db, years) {
   data
 }
 
-calc_stats <- function(data, by1, by2, probs = seq(0.1, 0.9, 0.01)) {
+calc_stats <- function(data, by1, by2) {
   by1_ <- syms(by1)
   by2_ <- syms(by2)
   n_years <- length(unique(data$year))
+  probs <- seq(0.1, 0.9, 0.01)
 
   dists_tot <- data %>%
     group_by(!!!by2_) %>%
@@ -56,15 +57,19 @@ calc_stats <- function(data, by1, by2, probs = seq(0.1, 0.9, 0.01)) {
   out
 }
 
-plot_stats <- function(data, color) {
-  color_ <- sym(color)
+plot_latest <- function(data, color = NULL) {
+  if (!is.null(color)) {
+    color_ <- sym(color)
+    out <- ggplot(data, aes(p, q, color = !!color_))
+  } else {
+    out <- ggplot(data, aes(p, q))
+  }
 
-  data %>%
-    ggplot(aes(p, q, color = !!color_)) +
+  out +
     geom_point(size = 1.5, alpha = 0.2) +
     geom_smooth(span = 0.5, se = FALSE, size = 1) +
     scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
-    scale_y_continuous(limits = c(0, NA), breaks = seq(0, 5e5, 2e4), labels = scales::comma) +
+    scale_y_log10(breaks = seq(1e4, 2e5, 1e4), minor_breaks = NULL, labels = scales::comma) +
     scale_color_brewer(type = "qual", palette = "Set1") +
     theme_bw()
 }
@@ -81,4 +86,4 @@ res %>%
   filter(grepl("seattle|harrisburg|las vegas", met2013)) %>%
   mutate(met2013 = substr(met2013, 1, 20)) %>%
   mutate(met2013 = reorder(met2013, desc(q))) %>%
-  plot_stats(color = "met2013")
+  plot_latest(color = "met2013")
