@@ -65,10 +65,8 @@ plot_latest <- function(data, color = NULL) {
 
 data <- get_data(file_db, years)
 
-weeks <- c("40-47 weeks", "48-49 weeks", "50-52 weeks")
-
 res <- data %>%
-  filter(sex == "male", age %in% 25:55, incwage > 0, wkswork2 %in% weeks, uhrswork >= 30) %>%
+  filter(sex == "male", age %in% 25:55, incwage > 0) %>%
   calc_stats(by = "met2013")
 
 res %>%
