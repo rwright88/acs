@@ -56,7 +56,7 @@ plot_latest <- function(data, color = NULL) {
     geom_point(size = 1.5, alpha = 0.2) +
     geom_smooth(span = 0.5, se = FALSE, size = 1) +
     scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
-    scale_y_log10(breaks = seq(1e4, 1e5, 1e4), minor_breaks = NULL, labels = scales::comma) +
+    scale_y_log10(breaks = seq(2e4, 2e5, 2e4), minor_breaks = NULL, labels = scales::comma) +
     scale_color_brewer(type = "qual", palette = "Set1") +
     theme_bw()
 }
