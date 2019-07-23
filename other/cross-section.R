@@ -65,12 +65,12 @@ plot_latest <- function(data, color = NULL) {
 
 data <- get_data(file_db, years)
 
-res <- data %>%
-  filter(sex == "male", age %in% 25:55, incwage > 0) %>%
-  calc_stats(by = "met2013")
-
-res %>%
-  filter(grepl("seattle|harrisburg|las vegas", met2013)) %>%
+data %>%
+  filter(sex == "male", age %in% 25:35, incwage > 7500) %>%
+  calc_stats(by = "met2013") %>%
+  filter(grepl("new york|harrisburg|las vegas", met2013)) %>%
   mutate(met2013 = substr(met2013, 1, 15)) %>%
   mutate(met2013 = reorder(met2013, desc(q))) %>%
-  plot_latest(color = "met2013")
+  plot_latest(color = "met2013") +
+  geom_hline(aes(yintercept = 60000), linetype = "dashed") +
+  geom_hline(aes(yintercept = 60000 * 1.3), linetype = "dashed")
