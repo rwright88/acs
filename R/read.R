@@ -30,6 +30,5 @@ acs_db_read <- function(file_db, years, vars) {
 acs_db_list <- function(file_db) {
   con <- DBI::dbConnect(RSQLite::SQLite(), file_db)
   on.exit(DBI::dbDisconnect(con))
-  vars <- DBI::dbListFields(con, "acs")
-  vars
+  DBI::dbListFields(con, "acs")
 }

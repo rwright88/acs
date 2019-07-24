@@ -21,12 +21,14 @@ get_data <- function(file_db, years) {
   left_join(data, acs::cw_occ, by = c("occ2010" = "occ_code"))
 }
 
-calc_stats <- function(data, by) {
-  by_ <- syms(by)
+calc_stats <- function(data, by = NULL) {
+  if (!is.null(by)) {
+    by_ <- syms(by)
+    data <- group_by(data, !!!by_)
+  }
   probs <- seq(0.1, 0.9, 0.01)
 
   out <- data %>%
-    group_by(!!!by_) %>%
     summarise(
       n = n(),
       pop = sum(perwt),
@@ -61,10 +63,16 @@ plot_latest <- function(data, color = NULL) {
 
 data <- get_data(file_db, years)
 
-data %>%
-  filter(sex == "male", age %in% 25:35, incwage > 7500) %>%
+data2 <- filter(data, sex == "male", age %in% 25:35, incwage > 7500)
+
+all <- data2 %>%
+  calc_stats() %>%
+  mutate(met2013 = "all")
+
+data2 %>%
   calc_stats(by = "met2013") %>%
   filter(grepl("new york|harrisburg|las vegas", met2013)) %>%
+  bind_rows(all) %>%
   mutate(met2013 = substr(met2013, 1, 15)) %>%
   mutate(met2013 = reorder(met2013, desc(q))) %>%
   plot_latest(color = "met2013") +

@@ -37,7 +37,7 @@ acs_clean <- function(data) {
     data[[var]] <- fun(data[[var]])
   }
 
-  if ("race" %in% vars && "hispan" %in% vars) {
+  if (all(c("race", "hispan") %in% vars)) {
     data$race <- rec_race(data$race, data$hispan)
     data$hispan <- NULL
   }

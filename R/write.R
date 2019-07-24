@@ -13,10 +13,10 @@ acs_db_write <- function(file_data, file_db) {
   if (!file.exists(file_data)) {
     stop("`file_data` does not exist.", call. = FALSE)
   }
-  names1 <- names(read.csv(file_data, nrows = 1))
-  n_cols <- length(names1)
+  nms <- names(read.csv(file_data, nrows = 1))
+  n_cols <- length(nms)
   types  <- rep("integer", n_cols)
-  names(types) <- names1
+  names(types) <- nms
 
   if (file.exists(file_db)) {
     file.remove(file_db)
