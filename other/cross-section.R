@@ -3,7 +3,6 @@
 library(acs)
 library(dplyr)
 library(ggplot2)
-library(readr)
 library(rwmisc)
 library(tidyr)
 
@@ -19,10 +18,7 @@ get_data <- function(file_db, years) {
   )
   data <- acs::acs_db_read(file_db, years = years, vars = vars)
   data <- acs::acs_clean(data)
-  cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
-  data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
-  data <- mutate_at(data, c("occ_cat_name", "occ_name"), tolower)
-  data
+  left_join(data, acs::cw_occ, by = c("occ2010" = "occ_code"))
 }
 
 calc_stats <- function(data, by) {

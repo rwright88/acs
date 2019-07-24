@@ -3,7 +3,6 @@
 library(acs)
 library(dplyr)
 library(ggplot2)
-library(readr)
 library(rwmisc)
 
 years <- c(1990, 2000, 2010:2017)
@@ -51,9 +50,7 @@ calc_by_year <- function(years) {
 }
 
 rec_occup <- function(data) {
-  cw_occ <- read_csv("data-raw/cw-occupation.csv", col_types = "icc")
-  data <- left_join(data, cw_occ, by = c("occ2010" = "occ_code"))
-  mutate_at(data, c("occ_cat_name", "occ_name"), tolower)
+  left_join(data, acs::cw_occ, by = c("occ2010" = "occ_code"))
 }
 
 plot_trend <- function(data, y, color, facet = NULL) {

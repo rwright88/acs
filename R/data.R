@@ -17,3 +17,14 @@
 #' }
 #'
 "cw_metro"
+
+#' Occupation crosswalk
+#'
+#' @format A data frame with three variables:
+#' \describe{
+#' \item{\code{occ_code}}{Code of occupation.}
+#' \item{\code{occ_name}}{Name of occupation.}
+#' \item{\code{occ_cat_name}}{Name of occupation major category.}
+#' }
+#'
+"cw_occ"
