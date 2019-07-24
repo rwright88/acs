@@ -6,12 +6,8 @@
 #' @return Data frame.
 #' @export
 acs_db_read <- function(file_db, years, vars) {
-  if (!is.numeric(years)) {
-    stop("`years` must be a numeric vector", call. = FALSE)
-  }
-  if (!is.character(vars)) {
-    stop("`vars` must be a character vector", call. = FALSE)
-  }
+  stopifnot(is.numeric(years))
+  stopifnot(is.character(vars))
 
   vars <- toupper(vars)
   YEAR <- NULL

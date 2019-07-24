@@ -9,9 +9,7 @@
 #' @return Data frame.
 #' @export
 acs_clean <- function(data) {
-  if (!is.data.frame(data)) {
-    stop("`data` must be a data frame.", call. = FALSE)
-  }
+  stopifnot(is.data.frame(data))
 
   params <- dplyr::tribble(
     ~var,       ~fun,
