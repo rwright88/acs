@@ -67,26 +67,52 @@ data$incwage <- data$incwage * wage_fix
 
 data2 <- filter(data, sex == "male", age %in% 25:35, incwage > 7500)
 
-all <- calc_stats(data2) %>%
-  mutate(met2013 = "all")
+plot_metros <- function(data, metros) {
+  all <- calc_stats(data) %>%
+    mutate(met2013 = "all")
 
-calc_stats(data2, by = "met2013") %>%
-  filter(grepl("harrisburg|las vegas", met2013)) %>%
-  bind_rows(all) %>%
-  mutate(met2013 = substr(met2013, 1, 15)) %>%
-  mutate(met2013 = reorder(met2013, desc(q))) %>%
-  plot_latest(color = "met2013") +
-  geom_hline(aes(yintercept = 60000), linetype = "dashed") +
-  geom_hline(aes(yintercept = 60000 * 1.3), linetype = "dashed")
+  calc_stats(data, by = "met2013") %>%
+    filter(grepl(!!metros, met2013)) %>%
+    bind_rows(all) %>%
+    mutate(met2013 = substr(met2013, 1, 15)) %>%
+    mutate(met2013 = reorder(met2013, desc(q))) %>%
+    plot_latest(color = "met2013")
+}
 
-all <- calc_stats(data2) %>%
-  mutate(occ_cat_name = "all")
+plot_metros(data = data2, metros = "seattle|harrisburg|las vegas")
 
-calc_stats(data2, by = "occ_cat_name") %>%
-  filter(grepl("computer|business", occ_cat_name)) %>%
-  bind_rows(all) %>%
-  mutate(occ_cat_name = substr(occ_cat_name, 1, 15)) %>%
-  mutate(occ_cat_name = reorder(occ_cat_name, desc(q))) %>%
-  plot_latest(color = "occ_cat_name") +
-  geom_hline(aes(yintercept = 60000), linetype = "dashed") +
-  geom_hline(aes(yintercept = 60000 * 1.3), linetype = "dashed")
+plot_occ_cats <- function(data, occ_cats) {
+  all <- calc_stats(data) %>%
+    mutate(occ_cat_name = "all")
+
+  calc_stats(data, by = "occ_cat_name") %>%
+    filter(grepl(!!occ_cats, occ_cat_name)) %>%
+    bind_rows(all) %>%
+    mutate(occ_cat_name = substr(occ_cat_name, 1, 15)) %>%
+    mutate(occ_cat_name = reorder(occ_cat_name, desc(q))) %>%
+    plot_latest(color = "occ_cat_name")
+}
+
+plot_occ_cats(data = data2, occ_cats = "computer|business")
+
+plot_occs <- function(data, occs) {
+  all <- calc_stats(data) %>%
+    mutate(occ_name = "all")
+
+  calc_stats(data, by = "occ_name") %>%
+    filter(grepl(!!occs, occ_name)) %>%
+    bind_rows(all) %>%
+    mutate(occ_name = substr(occ_name, 1, 15)) %>%
+    mutate(occ_name = reorder(occ_name, desc(q))) %>%
+    plot_latest(color = "occ_name")
+}
+
+plot_occs(data = data2, occs = "software|computer prog|computer sci|database")
+
+calc_stats(data2, by = "occ_name") %>%
+  filter(p >= 0.4 & p <= 0.6) %>%
+  group_by(occ_name) %>%
+  summarise(n = mean(n), pop = mean(pop), q = round(mean(q), -3)) %>%
+  mutate(occ_name = substr(occ_name, 1, 30)) %>%
+  mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
+  arrange(desc(pop))
