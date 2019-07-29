@@ -109,10 +109,27 @@ plot_occs <- function(data, occs) {
 
 plot_occs(data = data2, occs = "software|computer prog|computer sci|database")
 
-calc_stats(data2, by = "occ_name") %>%
+plot_degrees <- function(data, degrees) {
+  all <- calc_stats(data) %>%
+    mutate(degfield = "all")
+
+  calc_stats(data, by = "degfield") %>%
+    filter(grepl(!!degrees, degfield)) %>%
+    bind_rows(all) %>%
+    mutate(degfield = substr(degfield, 1, 15)) %>%
+    mutate(degfield = reorder(degfield, desc(q))) %>%
+    plot_latest(color = "degfield")
+}
+
+plot_degrees(data = data2, degrees = "computer|math|business")
+
+by <- "met2013"
+
+calc_stats(data2, by = by) %>%
   filter(p >= 0.4 & p <= 0.6) %>%
-  group_by(occ_name) %>%
+  group_by(!!sym(by)) %>%
   summarise(n = mean(n), pop = mean(pop), q = round(mean(q), -3)) %>%
-  mutate(occ_name = substr(occ_name, 1, 30)) %>%
+  mutate(!!sym(by) := substr(!!sym(by), 1, 20)) %>%
   mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
-  arrange(desc(pop))
+  arrange(desc(q)) %>%
+  mutate(perc_cume = cumsum(percent))
