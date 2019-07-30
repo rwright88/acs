@@ -43,6 +43,21 @@ calc_stats <- function(data, by = NULL) {
   out
 }
 
+rank_it <- function(data, by, order_by) {
+  out <- calc_stats(data, by = by)
+  out <- out[which(out$p >= 0.4 & out$p <= 0.6), ]
+  out <- group_by(out, !!sym(by))
+  out <- summarise(out, n = mean(n), pop = mean(pop), q = round(mean(q), -3))
+  out <- ungroup(out)
+  out[[by]] <- substr(out[[by]], 1, 30)
+  out$percent <- out$pop / sum(out$pop) * 100
+  out <- out[order(-out[[order_by]]), ]
+  out$perc_cume <- cumsum(out$percent)
+  out$percent <- round(out$percent, 1)
+  out$perc_cume <- round(out$perc_cume, 1)
+  out
+}
+
 plot_latest <- function(data, color = NULL) {
   if (!is.null(color)) {
     color_ <- sym(color)
@@ -60,6 +75,19 @@ plot_latest <- function(data, color = NULL) {
     theme_bw()
 }
 
+plot_it <- function(data, by, sub) {
+  all <- calc_stats(data)
+  all[[by]] <- "all"
+
+  out <- calc_stats(data, by = by)
+  out <- out[which(grepl(sub, out[[by]])), ]
+  out <- dplyr::bind_rows(out, all)
+  out[[by]] <- substr(out[[by]], 1, 15)
+  out[[by]] <- reorder(out[[by]], desc(out$q))
+
+  plot_latest(out, color = by)
+}
+
 # run ---------------------------------------------------------------------
 
 data <- get_data(file_db, years)
@@ -67,69 +95,9 @@ data$incwage <- data$incwage * wage_fix
 
 data2 <- filter(data, sex == "male", age %in% 25:35, incwage > 7500)
 
-plot_metros <- function(data, metros) {
-  all <- calc_stats(data) %>%
-    mutate(met2013 = "all")
+rank_it(data2, by = "met2013", order_by = "q")
 
-  calc_stats(data, by = "met2013") %>%
-    filter(grepl(!!metros, met2013)) %>%
-    bind_rows(all) %>%
-    mutate(met2013 = substr(met2013, 1, 15)) %>%
-    mutate(met2013 = reorder(met2013, desc(q))) %>%
-    plot_latest(color = "met2013")
-}
-
-plot_metros(data = data2, metros = "seattle|harrisburg|las vegas")
-
-plot_occ_cats <- function(data, occ_cats) {
-  all <- calc_stats(data) %>%
-    mutate(occ_cat_name = "all")
-
-  calc_stats(data, by = "occ_cat_name") %>%
-    filter(grepl(!!occ_cats, occ_cat_name)) %>%
-    bind_rows(all) %>%
-    mutate(occ_cat_name = substr(occ_cat_name, 1, 15)) %>%
-    mutate(occ_cat_name = reorder(occ_cat_name, desc(q))) %>%
-    plot_latest(color = "occ_cat_name")
-}
-
-plot_occ_cats(data = data2, occ_cats = "computer|business")
-
-plot_occs <- function(data, occs) {
-  all <- calc_stats(data) %>%
-    mutate(occ_name = "all")
-
-  calc_stats(data, by = "occ_name") %>%
-    filter(grepl(!!occs, occ_name)) %>%
-    bind_rows(all) %>%
-    mutate(occ_name = substr(occ_name, 1, 15)) %>%
-    mutate(occ_name = reorder(occ_name, desc(q))) %>%
-    plot_latest(color = "occ_name")
-}
-
-plot_occs(data = data2, occs = "software|computer prog|computer sci|database")
-
-plot_degrees <- function(data, degrees) {
-  all <- calc_stats(data) %>%
-    mutate(degfield = "all")
-
-  calc_stats(data, by = "degfield") %>%
-    filter(grepl(!!degrees, degfield)) %>%
-    bind_rows(all) %>%
-    mutate(degfield = substr(degfield, 1, 15)) %>%
-    mutate(degfield = reorder(degfield, desc(q))) %>%
-    plot_latest(color = "degfield")
-}
-
-plot_degrees(data = data2, degrees = "computer|math|business")
-
-by <- "met2013"
-
-calc_stats(data2, by = by) %>%
-  filter(p >= 0.4 & p <= 0.6) %>%
-  group_by(!!sym(by)) %>%
-  summarise(n = mean(n), pop = mean(pop), q = round(mean(q), -3)) %>%
-  mutate(!!sym(by) := substr(!!sym(by), 1, 20)) %>%
-  mutate(percent = round(pop / sum(pop) * 100, 1)) %>%
-  arrange(desc(q)) %>%
-  mutate(perc_cume = cumsum(percent))
+plot_it(data2, by = "met2013",      sub = "harrisburg|las vegas")
+plot_it(data2, by = "occ_cat_name", sub = "computer|transport")
+plot_it(data2, by = "occ_name",     sub = "software|driver/sales")
+plot_it(data2, by = "degfield",     sub = "computer|business")
