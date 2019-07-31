@@ -43,9 +43,9 @@ calc_stats <- function(data, by = NULL) {
   out
 }
 
-rank_it <- function(data, by, order_by) {
+rank_it <- function(data, by, order_by, q_range) {
   out <- calc_stats(data, by = by)
-  out <- out[which(out$p >= 0.4 & out$p <= 0.6), ]
+  out <- out[which(out$p >= q_range[1] & out$p <= q_range[2]), ]
   out <- group_by(out, !!sym(by))
   out <- summarise(out, n = mean(n), pop = mean(pop), q = round(mean(q), -3))
   out <- ungroup(out)
@@ -95,7 +95,7 @@ data$incwage <- data$incwage * wage_fix
 
 data2 <- filter(data, sex == "male", age %in% 25:35, incwage > 7500)
 
-rank_it(data2, by = "met2013", order_by = "q")
+rank_it(data2, by = "met2013", order_by = "q", q_range = c(0.4, 0.6))
 
 plot_it(data2, by = "met2013",      sub = "harrisburg|las vegas")
 plot_it(data2, by = "occ_cat_name", sub = "computer|transport")
