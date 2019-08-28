@@ -93,11 +93,11 @@ plot_it <- function(data, by, sub) {
 data <- get_data(file_db, years)
 data$incwage <- data$incwage * wage_fix
 
-data2 <- filter(data, sex == "male", age %in% 25:35, incwage > 7500)
+data2 <- filter(data, sex == "male", age %in% 25:55, incwage > 0)
 
 rank_it(data2, by = "met2013", order_by = "q", q_range = c(0.4, 0.6))
 
 plot_it(data2, by = "met2013",      sub = "seattle|harrisburg|las vegas")
 plot_it(data2, by = "occ_cat_name", sub = "computer|construction|transport")
 plot_it(data2, by = "occ_name",     sub = "software|computer prog|computer sci")
-plot_it(data2, by = "degfield",     sub = "computer|business|education")
+plot_it(data2, by = "degfield",     sub = "computer|business|math")

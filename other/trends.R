@@ -5,7 +5,7 @@ library(dplyr)
 library(ggplot2)
 library(rwmisc)
 
-years <- c(1990, 2000, 2010:2017)
+years <- 2010:2017
 
 # funs --------------------------------------------------------------------
 
@@ -20,12 +20,11 @@ calc_by_year <- function(years) {
     )
     data <- acs::acs_db_read(file_db, years = .x, vars = vars)
     data <- acs::acs_clean(data)
-    data <- filter(data, age %in% 25:55)
-    # data$age <- round((data$age + 0.1) / 10) * 10
-    data <- rec_occup(data)
-    # data$coder <- (data$occ2010 %in% c(1000, 1010, 1020, 1060))
+    data <- filter(data, age %in% 25:35)
+    data$educd <- rec_edu(data$educd)
+    data <- rec_occ(data)
 
-    by1 <- c("year", "sex", "occ_cat_name")
+    by1 <- c("year", "sex", "educd")
     by2 <- c("year", "sex")
 
     out <- data %>%
@@ -49,7 +48,13 @@ calc_by_year <- function(years) {
   bind_rows(out)
 }
 
-rec_occup <- function(data) {
+rec_edu <- function(x) {
+  x[x %in% c("hs-ged", "less-hs")] <- "hs-or-less"
+  x[x %in% c("advanced", "bachelor")] <- "bach-plus"
+  x
+}
+
+rec_occ <- function(data) {
   left_join(data, acs::cw_occ, by = c("occ2010" = "occ_code"))
 }
 
@@ -59,6 +64,7 @@ plot_trend <- function(data, y, color, facet = NULL) {
 
   out <- data %>%
     ggplot(aes(year, !!y_, color = !!color_)) +
+    geom_point(size = 2) +
     geom_line(size = 1) +
     scale_x_continuous(minor_breaks = NULL) +
     scale_color_brewer(type = "qual", palette = "Set1") +
@@ -75,50 +81,8 @@ plot_trend <- function(data, y, color, facet = NULL) {
 
 res <- calc_by_year(years = years)
 
-plot_trend_percent <- function(data) {
-  data <- data %>%
-    mutate(occ_cat_name = substr(occ_cat_name, 1, 20)) %>%
-    mutate(occ_cat_name = reorder(occ_cat_name, desc(percent)))
-
-  points <- data %>%
-    filter(year %% 10 == 0 | year == max(year))
-
-  data %>%
-    plot_trend(y = "percent", color = "sex", facet = "occ_cat_name") +
-    geom_point(data = points, mapping = aes(year, percent, color = sex), size = 2) +
-    ggrepel::geom_text_repel(
-      data = points,
-      mapping = aes(label = format(round(percent, 1), nsmall = 1)),
-      size = 3,
-      nudge_y = 1,
-      direction = "y"
-    ) +
-    scale_y_continuous(breaks = seq(0, 100, 5), minor_breaks = NULL) +
-    coord_cartesian(ylim = c(0, 15))
-}
-plot_trend_percent(res)
-ggsave("~/trends-percent.png", dpi = 300, width = 10, height = 8)
-
-plot_trend_wage <- function(data) {
-  data <- data %>%
-    mutate(occ_cat_name = substr(occ_cat_name, 1, 20)) %>%
-    mutate(occ_cat_name = reorder(occ_cat_name, desc(wage_p50)))
-
-  points <- data %>%
-    filter(year %% 10 == 0 | year == max(year))
-
-  data %>%
-    plot_trend(y = "wage_p50", color = "sex", facet = "occ_cat_name") +
-    geom_point(data = points, mapping = aes(year, wage_p50, color = sex), size = 2) +
-    ggrepel::geom_text_repel(
-      data = points,
-      mapping = aes(label = paste0(round(wage_p50 / 1e3), "k")),
-      size = 3,
-      nudge_y = 1,
-      direction = "y"
-    ) +
-    scale_y_continuous(breaks = seq(0, 2e5, 2e4), minor_breaks = NULL) +
-    coord_cartesian(ylim = c(0, 1e5))
-}
-plot_trend_wage(res)
-ggsave("~/trends-wage.png", dpi = 300, width = 10, height = 8)
+res %>%
+  mutate(educd = factor(educd, c("hs-or-less", "assoc-some", "bach-plus"))) %>%
+  plot_trend(y = "percent", color = "sex", facet = "educd") +
+  ggrepel::geom_text_repel(aes(label = round(percent, 1)), size = 3) +
+  scale_y_continuous(limits = c(0, NA))
