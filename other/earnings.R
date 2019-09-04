@@ -1,4 +1,4 @@
-# cross section
+# earnings percentiles
 
 library(acs)
 library(dplyr)
@@ -29,16 +29,14 @@ calc_stats <- function(data, by = NULL) {
   }
   probs <- seq(0.1, 0.9, 0.01)
 
-  out <- data %>%
-    summarise(
-      n = n(),
-      pop = sum(perwt),
-      p = list(!!probs),
-      q = list(rwmisc::wtd_quantile(incwage, perwt, probs = !!probs))
-    ) %>%
-    unnest() %>%
-    ungroup()
-
+  out <- summarise(out,
+    n = n(),
+    pop = sum(perwt),
+    p = list(!!probs),
+    q = list(rwmisc::wtd_quantile(incwage, perwt, probs = !!probs))
+  )
+  out <- unnest(out)
+  out <- ungroup(out)
   out$q[out$n < 100] <- NA
   out
 }
