@@ -21,11 +21,7 @@ get_data <- function(file_db, years) {
   left_join(data, acs::cw_occ, by = c("occ2010" = "occ_code"))
 }
 
-calc_stats <- function(data) {
-  data$tech <- rec_tech(data$degfield)
-  by1 <- c("sex", "race", "tech")
-  by2 <- c("sex", "race")
-
+calc_stats <- function(data, by1, by2) {
   out <- group_by(data, !!!syms(by1))
   out <- summarise(out, n = n(), pop = sum(perwt))
   out <- group_by(out, !!!syms(by2))
@@ -43,7 +39,7 @@ calc_stats <- function(data) {
 }
 
 rec_tech <- function(x) {
-  tech <- "computer|engineering$"
+  tech <- "computer|engineering$|math"
   out <- rep(NA_character_, length(x))
   out[grepl(tech, x)] <- "tech"
   out[!grepl(tech, x)] <- "non-tech"
@@ -58,6 +54,7 @@ data$incwage <- data$incwage * wage_fix
 
 data %>%
   filter(race != "other", age %in% 25:35) %>%
-  calc_stats() %>%
+  mutate(tech = rec_tech(degfield)) %>%
+  calc_stats(by1 = c("sex", "race", "tech"), by2 = c("sex", "race")) %>%
   arrange(desc(wage_p50)) %>%
   print(n = Inf)
