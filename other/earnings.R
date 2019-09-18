@@ -29,7 +29,7 @@ calc_stats <- function(data, by = NULL) {
   }
   probs <- seq(0.1, 0.9, 0.01)
 
-  out <- summarise(out,
+  out <- summarise(data,
     n = n(),
     pop = sum(perwt),
     p = list(!!probs),
