@@ -6,7 +6,7 @@ library(ggplot2)
 library(rwmisc)
 library(vroom)
 
-years <- c(1990, 2000, 2010:2017)
+years <- c(2000, 2010, 2017)
 wage_fix <- 1.05
 file_pcepi <- "other/pcepi.csv"
 
@@ -23,11 +23,11 @@ calc_by_year <- function(years) {
     )
     data <- acs::acs_db_read(file_db, years = .x, vars = vars)
     data <- acs::acs_clean(data)
-    data <- filter(data, age %in% 25:35)
-    data <- rec_occ(data)
+    data <- data[which(data$age %in% 25:54), ]
+    data$age <- round((data$age + 0.1) / 10) * 10
 
-    by1 <- c("year", "sex", "occ_cat_name")
-    by2 <- c("year", "sex")
+    by1 <- c("year", "sex", "age", "educd")
+    by2 <- c("year", "sex", "age")
 
     out <- group_by(data, !!!syms(by1))
     out <- summarise(out, n = n(), pop = sum(perwt))
@@ -37,7 +37,9 @@ calc_by_year <- function(years) {
 
     wage <- data[which(data$incwage > 0), ]
     wage <- group_by(wage, !!!syms(by1))
-    wage <- summarise(wage, wage_p50 = rwmisc::wtd_quantile(incwage, perwt, probs = 0.5))
+    wage <- summarise(wage,
+      wage_p50 = mean(rwmisc::wtd_quantile(incwage, perwt, probs = seq(0.4, 0.6, 0.01)))
+    )
     wage <- ungroup(wage)
 
     out <- left_join(out, wage, by = by1)
@@ -46,12 +48,6 @@ calc_by_year <- function(years) {
   })
 
   bind_rows(out)
-}
-
-rec_edu <- function(x) {
-  x[x %in% c("hs-ged", "less-hs")] <- "hs-or-less"
-  x[x %in% c("advanced", "bachelor")] <- "bach-plus"
-  x
 }
 
 rec_occ <- function(data) {
@@ -93,12 +89,7 @@ res$wage_p50 <- inflate(res$wage_p50, res$year, file_pcepi)
 rwmisc::summary2(res)
 
 res %>%
-  filter(year %in% c(1990, 2000, 2010, 2017)) %>%
-  mutate(occ_cat_name = substr(occ_cat_name, 1, 20)) %>%
-  mutate(occ_cat_name = reorder(occ_cat_name, desc(percent))) %>%
-  plot_trend(y = "percent", color = "sex", facet = "occ_cat_name") +
-  ggrepel::geom_text_repel(aes(label = round(percent, 1)), size = 3) +
-  scale_y_continuous(limits = c(0, NA), breaks = seq(0, 100, 5), minor_breaks = NULL)
-  # ggrepel::geom_text_repel(aes(label = round(wage_p50 / 1e3)), size = 3) +
-  # scale_y_log10(breaks = seq(2e4, 2e5, 2e4), minor_breaks = NULL) +
-  # coord_cartesian(ylim = c(1e4, 1e5))
+  filter(age == 30) %>%
+  mutate(educd = reorder(educd, desc(wage_p50))) %>%
+  plot_trend(y = "wage_p50", color = "educd", facet = "sex") +
+  scale_y_log10(breaks = seq(1e4, 2e5, 1e4), minor_breaks = NULL, label = scales::comma)
