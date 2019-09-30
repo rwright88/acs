@@ -60,6 +60,25 @@ rec_race <- function(race, hisp) {
   out
 }
 
+# relate ipums variable
+rec_relate <- function(x) {
+  out <- rep(NA_character_, length(x))
+  out[x == 1]  <- "head"
+  out[x == 2]  <- "spouse"
+  out[x == 3]  <- "child"
+  out[x == 4]  <- "child-in-law"
+  out[x == 5]  <- "parent"
+  out[x == 6]  <- "parent-in-law"
+  out[x == 7]  <- "sibling"
+  out[x == 8]  <- "sibling-in-law"
+  out[x == 9]  <- "grandchild"
+  out[x == 10] <- "other relatives"
+  out[x == 11] <- "partner, friend, visitor"
+  out[x == 12] <- "other non-relatives"
+  out[x == 13] <- "institutional inmates"
+  out
+}
+
 # sex ipums variable
 rec_sex <- function(x) {
   out <- rep(NA_character_, length(x))
