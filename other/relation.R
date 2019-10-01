@@ -18,6 +18,7 @@ calc_by_year <- function(years) {
     data <- acs::acs_db_read(file_db, years = year, vars = vars)
     data <- acs::acs_clean(data)
     data <- data[which(data$age %in% 20:40), ]
+    data <- data[which(data$relate != "institutional inmates"), ]
     data$cond <- rec_cond(data$relate, data$marst)
 
     by1 <- c("year", "sex", "age", "cond")
@@ -34,22 +35,25 @@ calc_by_year <- function(years) {
 }
 
 rec_cond <- function(relate, married) {
-  x <- c(
+  rel <- c(
     "head",
-    "spouse"
-    # "child",
-    # "child-in-law",
-    # "parent",
-    # "parent-in-law",
-    # "sibling",
-    # "sibling-in-law",
-    # "grandchild",
-    # "other relative",
-    # "partner, friend, visitor",
-    # "other non-relatives",
-    # "institutional inmates"
+    "spouse",
+    "child",
+    "child-in-law",
+    "parent",
+    "parent-in-law",
+    "sibling",
+    "sibling-in-law",
+    "grandchild",
+    "other relative",
+    "partner, friend, visitor",
+    "other non-relatives",
+    "institutional inmates"
   )
-  out <- (relate %in% x & married == TRUE)
+  out <- rep("other", length(relate))
+  out[relate %in% rel[1:2] & married == TRUE]          <- "married-own-place"
+  out[relate %in% rel[c(1, 11:12)] & married == FALSE] <- "alone-or-non-rel"
+  out[relate %in% rel[c(3:4, 9)]]                      <- "with-parents"
   out
 }
 
@@ -58,7 +62,7 @@ rec_cond <- function(relate, married) {
 res <- calc_by_year(years)
 
 res %>%
-  filter(cond == TRUE) %>%
+  filter(cond == "married-own-place") %>%
   mutate(year = factor(year)) %>%
   ggplot(aes(age, percent, color = year)) +
   geom_point(size = 2) +

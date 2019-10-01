@@ -6,7 +6,7 @@ library(ggplot2)
 library(rwmisc)
 library(vroom)
 
-years <- c(2000, 2010, 2017)
+years <- 2010:2017
 wage_fix <- 1.05
 file_pcepi <- "other/pcepi.csv"
 
@@ -15,19 +15,19 @@ file_pcepi <- "other/pcepi.csv"
 calc_by_year <- function(years) {
   stopifnot(all(years %in% c(1980, 1990, 2000, 2010:2017)))
 
-  out <- lapply(years, function(.x) {
+  out <- lapply(years, function(year) {
     file_db <- "~/data/acs/acsdb"
     vars <- c(
       "year", "perwt", "met2013", "sex", "age", "race", "hispan",
-      "educd", "degfield", "occ2010", "uhrswork", "incwage"
+      "educd", "degfield", "occ2010", "incwage"
     )
-    data <- acs::acs_db_read(file_db, years = .x, vars = vars)
+    data <- acs::acs_db_read(file_db, years = year, vars = vars)
     data <- acs::acs_clean(data)
     data <- data[which(data$age %in% 25:54), ]
     data$age <- round((data$age + 0.1) / 10) * 10
 
-    by1 <- c("year", "sex", "age", "educd")
-    by2 <- c("year", "sex", "age")
+    by1 <- c("year", "sex", "age", "race", "educd")
+    by2 <- c("year", "sex", "age", "race")
 
     out <- group_by(data, !!!syms(by1))
     out <- summarise(out, n = n(), pop = sum(perwt))
@@ -61,25 +61,6 @@ inflate <- function(x, year, file_pcepi) {
   x * pcepi_cur / pcepi_val
 }
 
-plot_trend <- function(data, y, color, facet = NULL) {
-  y_ <- sym(y)
-  color_ <- sym(color)
-
-  out <- data %>%
-    ggplot(aes(year, !!y_, color = !!color_)) +
-    geom_point(size = 2) +
-    geom_line(size = 1) +
-    scale_x_continuous(minor_breaks = NULL) +
-    scale_color_brewer(type = "qual", palette = "Set1") +
-    theme_bw()
-
-  if (!is.null(facet)) {
-    out <- out + facet_wrap(facet, ncol = 6)
-  }
-
-  out
-}
-
 # run ---------------------------------------------------------------------
 
 res <- calc_by_year(years = years)
@@ -89,7 +70,13 @@ res$wage_p50 <- inflate(res$wage_p50, res$year, file_pcepi)
 rwmisc::summary2(res)
 
 res %>%
-  filter(age == 30) %>%
+  filter(age == 30, race == "white") %>%
   mutate(educd = reorder(educd, desc(wage_p50))) %>%
-  plot_trend(y = "wage_p50", color = "educd", facet = "sex") +
-  scale_y_log10(breaks = seq(1e4, 2e5, 1e4), minor_breaks = NULL, label = scales::comma)
+  ggplot(aes(year, wage_p50, color = sex)) +
+  geom_point(size = 2) +
+  geom_line(size = 1) +
+  facet_wrap("educd", nrow = 1) +
+  scale_x_continuous(minor_breaks = NULL) +
+  scale_y_log10(breaks = seq(1e4, 5e5, 1e4), minor_breaks = NULL) +
+  scale_color_brewer(type = "qual", palette = "Set1") +
+  theme_bw()
