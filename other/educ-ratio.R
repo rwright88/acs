@@ -3,6 +3,7 @@
 library(acs)
 library(dplyr)
 library(ggplot2)
+library(tidyr)
 
 years <- 2010:2017
 
@@ -46,8 +47,8 @@ res <- calc_by_year(years = years)
 
 res %>%
   select(-n, -pop) %>%
-  filter(age == 40, race != "other") %>%
-  tidyr::spread(sex, percent) %>%
+  filter(age == 30, race != "other") %>%
+  spread(sex, percent) %>%
   mutate(ratio = female / male) %>%
   ggplot(aes(year, ratio, color = educd)) +
   geom_point(size = 2) +
