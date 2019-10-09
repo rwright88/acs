@@ -18,8 +18,8 @@ calc_by_year <- function(years) {
   out <- lapply(years, function(year) {
     file_db <- "~/data/acs/acsdb"
     vars <- c(
-      "year", "perwt", "met2013", "sex", "age", "race", "hispan",
-      "educd", "degfield", "occ2010", "incwage"
+      "year", "perwt", "met2013", "sex", "age", "race", "hispan", "educd",
+      "degfield", "occ2010", "incwage"
     )
     data <- acs::acs_db_read(file_db, years = year, vars = vars)
     data <- acs::acs_clean(data)

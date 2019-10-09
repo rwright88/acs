@@ -14,7 +14,7 @@ wage_fix <- 1.1
 get_data <- function(file_db, years) {
   vars <- c(
     "year", "perwt", "met2013", "sex", "age", "race", "hispan", "educd",
-    "degfield", "occ2010", "wkswork2", "uhrswork", "incwage"
+    "degfield", "occ2010", "incwage"
   )
   data <- acs::acs_db_read(file_db, years = years, vars = vars)
   data <- acs::acs_clean(data)
@@ -28,9 +28,12 @@ calc_stats <- function(data, by1, by2) {
   out <- mutate(out, percent = round(pop / sum(pop) * 100, 1))
   out <- ungroup(out)
 
+  p <- seq(0.4, 0.6, 0.01)
   wage <- data[which(data$incwage > 0), ]
   wage <- group_by(wage, !!!syms(by1))
-  wage <- summarise(wage, wage_p50 = rwmisc::wtd_quantile(incwage, perwt, probs = 0.5))
+  wage <- summarise(wage,
+    wage_p50 = round(mean(rwmisc::wtd_quantile(incwage, perwt, probs = !!p)), -3)
+  )
   wage <- ungroup(wage)
 
   out <- left_join(out, wage, by = by1)
