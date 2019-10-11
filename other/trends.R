@@ -6,7 +6,7 @@ library(ggplot2)
 library(rwmisc)
 library(vroom)
 
-years <- 2010:2017
+years <- c(2010:2017)
 wage_fix <- 1.05
 file_pcepi <- "other/pcepi.csv"
 
@@ -26,8 +26,8 @@ calc_by_year <- function(years) {
     data <- data[which(data$age %in% 25:54), ]
     data$age <- round((data$age + 0.1) / 10) * 10
 
-    by1 <- c("year", "sex", "age", "race", "educd")
-    by2 <- c("year", "sex", "age", "race")
+    by1 <- c("year", "sex", "age", "race")
+    by2 <- c("year", "sex", "age")
 
     out <- group_by(data, !!!syms(by1))
     out <- summarise(out, n = n(), pop = sum(perwt))
@@ -35,15 +35,16 @@ calc_by_year <- function(years) {
     out <- mutate(out, percent = pop / sum(pop) * 100)
     out <- ungroup(out)
 
+    p <- seq(0.7, 0.8, 0.01)
     wage <- data[which(data$incwage > 0), ]
     wage <- group_by(wage, !!!syms(by1))
     wage <- summarise(wage,
-      wage_p50 = mean(rwmisc::wtd_quantile(incwage, perwt, probs = seq(0.4, 0.6, 0.01)))
+      wage = mean(rwmisc::wtd_quantile(incwage, perwt, probs = !!p))
     )
     wage <- ungroup(wage)
 
     out <- left_join(out, wage, by = by1)
-    out$wage_p50[out$n < 100] <- NA
+    out$wage[out$n < 100] <- NA
     out
   })
 
@@ -64,18 +65,18 @@ inflate <- function(x, year, file_pcepi) {
 # run ---------------------------------------------------------------------
 
 res <- calc_by_year(years = years)
-res$wage_p50 <- res$wage_p50 * wage_fix
-res$wage_p50 <- inflate(res$wage_p50, res$year, file_pcepi)
+res$wage <- res$wage * wage_fix
+res$wage <- inflate(res$wage, res$year, file_pcepi)
 
 rwmisc::summary2(res)
 
 res %>%
-  filter(age == 30, race == "white") %>%
-  mutate(educd = reorder(educd, desc(wage_p50))) %>%
-  ggplot(aes(year, wage_p50, color = sex)) +
+  filter(sex == "male", race != "other") %>%
+  mutate(race = reorder(race, desc(wage))) %>%
+  ggplot(aes(year, wage, color = race)) +
   geom_point(size = 2) +
   geom_line(size = 1) +
-  facet_wrap("educd", nrow = 1) +
+  facet_wrap("age", nrow = 1) +
   scale_x_continuous(minor_breaks = NULL) +
   scale_y_log10(breaks = seq(1e4, 5e5, 1e4), minor_breaks = NULL) +
   scale_color_brewer(type = "qual", palette = "Set1") +
