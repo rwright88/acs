@@ -18,7 +18,7 @@ calc_by_year <- function(years) {
     data <- acs::acs_db_read(file_db, years = year, vars = vars)
     data <- acs::acs_clean(data)
     data <- data[which(data$age %in% 20:40), ]
-    data <- data[which(data$relate != "institutional inmates"), ]
+    # data <- data[which(data$relate != "institutional inmates"), ]
     data$cond <- rec_cond(data$relate, data$marst)
 
     by1 <- c("year", "sex", "age", "cond")
@@ -51,7 +51,7 @@ rec_cond <- function(relate, married) {
     "institutional inmates"
   )
   out <- rep("other", length(relate))
-  out[relate %in% rel[1:2] & married == TRUE]          <- "married-own-place"
+  out[relate %in% rel[1:2] & married == TRUE]          <- "married-head-spouse"
   out[relate %in% rel[c(1, 11:12)] & married == FALSE] <- "alone-or-non-rel"
   out[relate %in% rel[c(3:4, 9)]]                      <- "with-parents"
   out
@@ -62,10 +62,10 @@ rec_cond <- function(relate, married) {
 res <- calc_by_year(years)
 
 res %>%
-  filter(cond == "married-own-place") %>%
+  filter(cond == "married-head-spouse") %>%
   mutate(year = factor(year)) %>%
   ggplot(aes(age, percent, color = year)) +
-  geom_point(size = 2) +
+  geom_point(size = 1.5) +
   geom_line(size = 1) +
   facet_wrap("sex") +
   scale_x_continuous(minor_breaks = NULL) +
